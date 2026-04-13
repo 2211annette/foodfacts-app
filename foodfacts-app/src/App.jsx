@@ -1,58 +1,57 @@
-import { useState } from 'react'
-import SearchBar from './components/SearchBar'
-import FoodList from './components/FoodList'
+import { useReducer } from 'react'
+import { Routes, Route } from 'react-router-dom'
+import NavBar from './components/NavBar'
+import HomePage from './pages/HomePage'
+import DetailPage from './pages/DetailPage'
+import SavedPage from './pages/SavedPage'
 
-function App() {
-  const [results, setResults] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [hasSearched, setHasSearched] = useState(false)
+/* ✅ ADD IT HERE (outside the component) */
+function savedReducer(state, action) {
+  switch (action.type) {
 
-  const handleSearch = async (query) => {
-    setLoading(true)
-    setHasSearched(true)
-
-    try {
-      const url = `/api/cgi/search.pl?search_terms=${encodeURIComponent(query)}&json=1&page_size=10`
-      const response = await fetch(url)
-      const data = await response.json()
-
-      const filteredProducts = data.products.filter(
-        (p) => p.product_name && p.product_name.trim() !== ''
+    case 'ADD': {
+      const exists = state.some(
+        (item) => item.code === action.product.code
       )
-
-      setResults(filteredProducts)
-    } catch (error) {
-      console.error('Something went wrong:', error)
-    } finally {
-      setLoading(false)
+      if (exists) return state
+      return [...state, action.product]
     }
+
+    case 'REMOVE': {
+      return state.filter(
+        (item) => item.code !== action.code
+      )
+    }
+
+    default:
+      return state
   }
+}
+
+/* ✅ Your App component */
+function App() {
+  const [saved, dispatch] = useReducer(savedReducer, [])
 
   return (
-  <div>
-    <h1>🥗 FoodFacts</h1>
+    <div>
+      <NavBar savedCount={saved.length}/>
+      <main>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
 
-    <SearchBar onSearch={handleSearch} />
+          <Route
+            path="/product/:barcode"
+            element={<DetailPage saved={saved} dispatch={dispatch} />}
+          />
 
-    {/* 1️⃣ Loading */}
-    {loading && <p>Loading...</p>}
-
-    {/* 2️⃣ Before search */}
-    {!loading && !hasSearched && (
-      <p>Search for a food above to see its nutrition info.</p>
-    )}
-
-    {/* 3️⃣ No results */}
-    {!loading && hasSearched && results.length === 0 && (
-      <p>No results found. Try a different search.</p>
-    )}
-
-    {/* 4️⃣ Results */}
-    {!loading && results.length > 0 && (
-      <FoodList products={results} />
-    )}
-  </div>
-)
+          <Route
+            path="/saved"
+            element={<SavedPage saved={saved} dispatch={dispatch} />}
+          />
+        </Routes>
+      </main>
+    </div>
+  )
 }
 
 export default App

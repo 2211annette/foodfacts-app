@@ -1,8 +1,26 @@
+import { useNavigate } from 'react-router-dom'
+
 function FoodCard({ product }) {
-  const { product_name, brands, nutriments, image_small_url } = product
+  const navigate = useNavigate()
+
+  const {
+    product_name,
+    brands,
+    nutriments,
+    image_small_url,
+    code
+  } = product
+
+  const handleClick = () => {
+    navigate(`/product/${code}`)
+  }
 
   return (
-    <div className="food-card">
+    <div
+      className="food-card"
+      onClick={handleClick}
+      style={{ cursor: 'pointer' }}
+    >
       {/* Image with fallback */}
       <img
         src={image_small_url || "https://via.placeholder.com/150"}
@@ -15,7 +33,7 @@ function FoodCard({ product }) {
       {/* Brand */}
       <p>{brands ? `Brand: ${brands}` : "Brand not available"}</p>
 
-      {/* Nutriments (at least 3) */}
+      {/* Nutriments */}
       <p>
         Calories:{" "}
         {nutriments?.["energy-kcal_100g"] ?? "N/A"} kcal
