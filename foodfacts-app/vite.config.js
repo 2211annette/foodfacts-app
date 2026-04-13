@@ -8,8 +8,8 @@ export default defineConfig({
       '/api': {
         target: 'https://world.openfoodfacts.org',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
-    },
-  },
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
 })
