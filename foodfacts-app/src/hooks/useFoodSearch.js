@@ -20,6 +20,7 @@ function useFoodSearch() {
           page_size: 10
         }
       })
+      
 
       // ✅ FILTER LOGIC (same as before)
       const filtered = response.data.products.filter(
@@ -29,10 +30,18 @@ function useFoodSearch() {
       setResults(filtered)
 
     } catch (err) {
-      setError('Something went wrong. Please try again.')
+      if (err.response) {
+        // Server responded with error
+        setError(`Server error: ${err.response.status}. Please try again.`)
+      } else if (err.request) {
+        // No response (likely offline)
+        setError('Network error. Check your connection and try again.')
+      } else {
+        // Something else
+        setError('Something went wrong. Please try again.')
+      }
+
       setResults([])
-    } finally {
-      setLoading(false)
     }
   }
 

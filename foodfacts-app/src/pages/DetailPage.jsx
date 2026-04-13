@@ -11,28 +11,40 @@ function DetailPage({ saved, dispatch }) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true)
-      setError(null)
+  let cancelled = false
 
-      try {
-        const url = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
-        const response = await axios.get(url)
+  const fetchProduct = async () => {
+    setLoading(true)
+    setError(null)
 
+    try {
+      const response = await axios.get(
+        `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
+      )
+
+      if (!cancelled) {
         if (response.data.status === 1) {
           setProduct(response.data.product)
         } else {
           setProduct(null)
         }
-      } catch (err) {
-        setError('Failed to load product details.')
-      } finally {
+        setLoading(false)
+      }
+
+    } catch (err) {
+      if (!cancelled) {
+        setError('Could not load product details.')
         setLoading(false)
       }
     }
+  }
 
-    fetchProduct()
-  }, [barcode])
+  fetchProduct()
+
+  return () => {
+    cancelled = true
+  }
+}, [barcode])
 
   // ✅ Check if already saved
   const isSaved = saved.some((p) => p.code === barcode)
