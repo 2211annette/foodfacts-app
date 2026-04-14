@@ -1,59 +1,48 @@
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import CardMedia from '@mui/material/CardMedia'
+import CardActionArea from '@mui/material/CardActionArea'
+import Typography from '@mui/material/Typography'
+import Chip from '@mui/material/Chip'
 import { useNavigate } from 'react-router-dom'
 
 function FoodCard({ product }) {
   const navigate = useNavigate()
 
-  const {
-    product_name,
-    brands,
-    nutriments,
-    image_small_url,
-    code
-  } = product
-
   const handleClick = () => {
-    navigate(`/product/${code}`)
+    navigate(`/product/${product.id}`, { state: { product } })
   }
 
   return (
-    <div
-      className="food-card"
-      onClick={handleClick}
-      style={{ cursor: 'pointer' }}
-    >
-      {/* Image with fallback */}
-      <img
-        src={image_small_url || "https://via.placeholder.com/150"}
-        alt={product_name || "Food item"}
-      />
-
-      {/* Product Name */}
-      <h2>{product_name || "Unknown Product"}</h2>
-
-      {/* Brand */}
-      <p>{brands ? `Brand: ${brands}` : "Brand not available"}</p>
-
-      {/* Nutriments */}
-      <p>
-        Calories:{" "}
-        {nutriments?.["energy-kcal_100g"] ?? "N/A"} kcal
-      </p>
-
-      <p>
-        Protein:{" "}
-        {nutriments?.proteins_100g ?? "N/A"} g
-      </p>
-
-      <p>
-        Carbs:{" "}
-        {nutriments?.carbohydrates_100g ?? "N/A"} g
-      </p>
-
-      <p>
-        Fat:{" "}
-        {nutriments?.fat_100g ?? "N/A"} g
-      </p>
-    </div>
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardActionArea onClick={handleClick} sx={{ flexGrow: 1 }}>
+        {product.image_small_url && (
+          <CardMedia
+            component="img"
+            height="140"
+            image={product.image_small_url}
+            alt={product.product_name}
+            sx={{ objectFit: 'contain', p: 1 }}
+          />
+        )}
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            {product.product_name || 'Unknown Product'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            {product.brands || 'Unknown Brand'}
+          </Typography>
+          {product.nutriments?.['energy-kcal_100g'] && (
+            <Chip
+              label={`${Math.round(product.nutriments['energy-kcal_100g'])} kcal / 100g`}
+              size="small"
+              color="primary"
+              variant="outlined"
+            />
+          )}
+        </CardContent>
+      </CardActionArea>
+    </Card>
   )
 }
 

@@ -42,6 +42,8 @@ function useFoodSearch() {
       }
 
       setResults([])
+    } finally{
+      setLoading(false)
     }
   }
 

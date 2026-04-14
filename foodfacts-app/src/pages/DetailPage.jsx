@@ -1,102 +1,100 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
+import { addItem, removeItem } from '../store/savedSlice'
+import { useLocation } from 'react-router-dom'
 import axios from 'axios'
+import Container from '@mui/material/Container'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button'
+import Paper from '@mui/material/Paper'
+import Chip from '@mui/material/Chip'
+import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
+import BookmarkRemoveIcon from '@mui/icons-material/BookmarkRemove'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import NutritionRow from '../components/NutritionRow'
 
-function DetailPage({ saved, dispatch }) {
-  const { barcode } = useParams()
+function DetailPage() {
+  const dispatch = useDispatch()
+  const savedItems = useSelector(state => state.saved.items)
+  const location = useLocation()
   const navigate = useNavigate()
+  const product = location.state?.product
 
-  const [product, setProduct] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-  let cancelled = false
-
-  const fetchProduct = async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const response = await axios.get(
-        `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`
-      )
-
-      if (!cancelled) {
-        if (response.data.status === 1) {
-          setProduct(response.data.product)
-        } else {
-          setProduct(null)
-        }
-        setLoading(false)
-      }
-
-    } catch (err) {
-      if (!cancelled) {
-        setError('Could not load product details.')
-        setLoading(false)
-      }
-    }
+  if (!product) {
+    return (
+      <Container sx={{ py: 4 }}>
+        <Typography>Product not found.</Typography>
+        <Button onClick={() => navigate('/')}>← Back to Search</Button>
+      </Container>
+    )
   }
 
-  fetchProduct()
+  const { product_name, brands, image_url, nutriments } = product
+  const isSaved = savedItems.some(p => p.id === product.id)
 
-  return () => {
-    cancelled = true
-  }
-}, [barcode])
-
-  // ✅ Check if already saved
-  const isSaved = saved.some((p) => p.code === barcode)
-
-  // ✅ Toggle save/remove
   const handleSaveToggle = () => {
     if (isSaved) {
-      dispatch({ type: 'REMOVE', code: barcode })
+      dispatch(removeItem(product.id))
     } else {
-      dispatch({ type: 'ADD', product: product })
+      dispatch(addItem(product))
     }
   }
-
-  if (loading) return <p>Loading product details...</p>
-  if (error) return <p>{error}</p>
-  if (!product) return <p>Product not found.</p>
-
-  const { product_name, brands, nutriments, image_front_small_url } = product
-
   return (
-    <div className="detail-page">
-      <button onClick={() => navigate(-1)}>← Back</button>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Button
+        startIcon={<ArrowBackIcon />}
+        onClick={() => navigate(-1)}
+        sx={{ mb: 3 }}
+      >
+        Back
+      </Button>
 
-      <div className="detail-header">
-        <img
-          src={image_front_small_url || "https://via.placeholder.com/150"}
-          alt={product_name}
-        />
-        <div>
-          <h2>{product_name}</h2>
-          <p>{brands}</p>
-        </div>
-      </div>
+      <Paper sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 3 }}>
+          {image_url && (
+            <Box
+              component="img"
+              src={image_url}
+              alt={product_name}
+              sx={{ width: 160, height: 160, objectFit: 'contain' }}
+            />
+          )}
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" gutterBottom>
+              {product_name || 'Unknown Product'}
+            </Typography>
+            <Typography color="text.secondary" gutterBottom>
+              {brands || 'Unknown Brand'}
+            </Typography>
+            <Button
+              variant={isSaved ? 'outlined' : 'contained'}
+              color={isSaved ? 'error' : 'primary'}
+              startIcon={isSaved ? <BookmarkRemoveIcon /> : <BookmarkAddIcon />}
+              onClick={handleSaveToggle}
+              sx={{ mt: 1 }}
+            >
+              {isSaved ? 'Remove from Saved' : 'Save to My List'}
+            </Button>
+          </Box>
+        </Box>
 
-      <div className="nutrition-table">
-        <h3>Nutrition per 100g</h3>
-        <ul>
-          <li>Calories: {nutriments?.["energy-kcal_100g"] ?? "N/A"} kcal</li>
-          <li>Protein: {nutriments?.proteins_100g ?? "N/A"} g</li>
-          <li>Carbs: {nutriments?.carbohydrates_100g ?? "N/A"} g</li>
-          <li>Fat: {nutriments?.fat_100g ?? "N/A"} g</li>
-          <li>Sugar: {nutriments?.sugars_100g ?? "N/A"} g</li>
-          <li>Salt: {nutriments?.salt_100g ?? "N/A"} g</li>
-        </ul>
-      </div>
+        <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+          Nutrition per 100g
+        </Typography>
 
-      {/* ✅ Save/Remove Button */}
-      <button onClick={handleSaveToggle}>
-        {isSaved ? '★ Remove from Saved' : '☆ Save to My List'}
-      </button>
-    </div>
+        <NutritionRow label="Calories" value={nutriments?.['energy-kcal_100g']} unit=" kcal" />
+        <NutritionRow label="Protein" value={nutriments?.proteins_100g} unit="g" />
+        <NutritionRow label="Carbohydrates" value={nutriments?.carbohydrates_100g} unit="g" />
+        <NutritionRow label="Sugars" value={nutriments?.sugars_100g} unit="g" />
+        <NutritionRow label="Fat" value={nutriments?.fat_100g} unit="g" />
+        <NutritionRow label="Saturated Fat" value={nutriments?.['saturated-fat_100g']} unit="g" />
+        <NutritionRow label="Fibre" value={nutriments?.fiber_100g} unit="g" />
+        <NutritionRow label="Salt" value={nutriments?.salt_100g} unit="g" />
+      </Paper>
+    </Container>
   )
 }
 
-export default DetailPage
+export default DetailPage;
