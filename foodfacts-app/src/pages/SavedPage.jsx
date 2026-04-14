@@ -37,7 +37,7 @@ function SavedPage() {
       </Typography>
 
       <Grid container spacing={2}>
-        {savedItemsgi.map((product) => (
+        {savedItems.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product.code}>
             <Card>
               <CardContent>
