@@ -12,10 +12,12 @@ import Button from '@mui/material/Button'
 
 
 
-function SavedPage({ saved, dispatch }) {
+function SavedPage() {
   const navigate = useNavigate()
-
-  if (saved.length === 0) {
+  const dispatch = useDispatch()
+  const savedItems = useSelector(state => state.saved.items)
+  
+  if (savedItems.length === 0) {
     return (
       <Container sx={{ py: 4 }}>
         <Typography variant="h5" gutterBottom>
@@ -31,11 +33,11 @@ function SavedPage({ saved, dispatch }) {
   return (
     <Container sx={{ py: 4 }}>
       <Typography variant="h5" gutterBottom>
-        Saved Items ({saved.length})
+        Saved Items ({savedItems.length})
       </Typography>
 
       <Grid container spacing={2}>
-        {saved.map((product) => (
+        {savedItemsgi.map((product) => (
           <Grid item xs={12} sm={6} md={4} key={product.code}>
             <Card>
               <CardContent>

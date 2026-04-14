@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { addItem, removeItem } from '../store/savedSlice'
+import { useLocation } from 'react-router-dom'
 import axios from 'axios'
 import Container from '@mui/material/Container'
 import Box from '@mui/material/Box'
@@ -33,6 +34,13 @@ function DetailPage() {
   const { product_name, brands, image_url, nutriments } = product
   const isSaved = savedItems.some(p => p.id === product.id)
 
+  const handleSaveToggle = () => {
+    if (isSaved) {
+      dispatch(removeItem(product.id))
+    } else {
+      dispatch(addItem(product))
+    }
+  }
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <Button
