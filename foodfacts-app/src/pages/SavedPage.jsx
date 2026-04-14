@@ -1,51 +1,79 @@
+import { useSelector, useDispatch } from 'react-redux'
+import { removeItem } from '../store/savedSlice'
 import { useNavigate } from 'react-router-dom'
+
+import Container from '@mui/material/Container'
+import Typography from '@mui/material/Typography'
+import Grid from '@mui/material/Grid'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import CardActions from '@mui/material/CardActions'
+import Button from '@mui/material/Button'
+
+
 
 function SavedPage({ saved, dispatch }) {
   const navigate = useNavigate()
 
   if (saved.length === 0) {
     return (
-      <div className="page">
-        <h2>Saved Items</h2>
-        <p>
-          You haven't saved anything yet. Search for a food and save it from the detail page.
-        </p>
-      </div>
+      <Container sx={{ py: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Saved Items
+        </Typography>
+        <Typography>
+          You haven't saved anything yet.
+        </Typography>
+      </Container>
     )
   }
 
   return (
-    <div className="page">
-      <h2>Saved Items ({saved.length})</h2>
+    <Container sx={{ py: 4 }}>
+      <Typography variant="h5" gutterBottom>
+        Saved Items ({saved.length})
+      </Typography>
 
-      <div className="food-list">
+      <Grid container spacing={2}>
         {saved.map((product) => (
-          <div key={product.code} className="saved-item">
+          <Grid item xs={12} sm={6} md={4} key={product.code}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6">
+                  {product.product_name || 'Unknown'}
+                </Typography>
+                <Typography color="text.secondary">
+                  {product.brands || 'Unknown Brand'}
+                </Typography>
+              </CardContent>
 
-            {/* Product Info */}
-            <h3>{product.product_name || "Unknown Product"}</h3>
-            <p>{product.brands || "Unknown Brand"}</p>
+              <CardActions>
+                <Button
+                  size="small"
+                  onClick={() =>
+                    navigate(`/product/${product.code}`, {
+                      state: { product }
+                    })
+                  }
+                >
+                  View Details
+                </Button>
 
-            {/* Buttons */}
-            <div style={{ marginTop: '10px' }}>
-              <button onClick={() => navigate(`/product/${product.code}`)}>
-                View Details
-              </button>
-
-              <button
-                onClick={() =>
-                  dispatch({ type: 'REMOVE', code: product.code })
-                }
-                style={{ marginLeft: '10px' }}
-              >
-                Remove
-              </button>
-            </div>
-
-          </div>
+                <Button
+                  size="small"
+                  color="error"
+                  onClick={() =>
+                    dispatch({ type: 'REMOVE', code: product.code })
+                  }
+                >
+                  Remove
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
         ))}
-      </div>
-    </div>
+      </Grid>
+    </Container>
   )
 }
 
